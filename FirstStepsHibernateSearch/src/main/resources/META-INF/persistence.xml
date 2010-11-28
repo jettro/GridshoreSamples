@@ -8,7 +8,7 @@
         <properties>
             <!-- Hibernate Search configuration -->
             <!-- not a good practise but for testing oke to use a relative path -->
-            <!--<property name="hibernate.search.default.indexBase" value="/home/user/storage"/>-->
+            <!--<property name="hibernate.search.default.indexBase" value="./build/searchindex"/>-->
             <!--<property name="hibernate.search.default.directory_provider" value="org.hibernate.search.store.FSDirectoryProvider" />-->
 
             <!-- For in memory databases it is handy to have an in memory index -->

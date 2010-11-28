@@ -21,7 +21,7 @@ public class Person {
     private Integer id;
 
 
-    @Field(store = Store.YES)
+    @Field
     private String title;
 
     @Field

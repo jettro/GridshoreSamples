@@ -31,8 +31,6 @@ public class PersonRepository {
     private EntityManager entityManager;
 
     public void store(Person person) {
-//        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
-//        fullTextEntityManager.persist(person);
         entityManager.persist(person);
     }
 
