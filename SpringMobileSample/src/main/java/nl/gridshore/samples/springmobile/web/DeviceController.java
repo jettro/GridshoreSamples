@@ -18,4 +18,5 @@ public class DeviceController {
         model.addAttribute("device", device);
         return "device/info";
     }
+
 }
