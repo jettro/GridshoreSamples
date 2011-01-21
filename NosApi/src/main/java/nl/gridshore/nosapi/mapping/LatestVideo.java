@@ -1,6 +1,5 @@
 package nl.gridshore.nosapi.mapping;
 
-import nl.gridshore.nosapi.mapping.Article;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.ArrayList;
@@ -8,8 +7,8 @@ import java.util.ArrayList;
 /**
  * @author Jettro Coenradie
  */
-public class LatestArticle implements LatestItem {
-    @JsonProperty("latest_article")
+public class LatestVideo  implements LatestItem {
+    @JsonProperty("latest_video")
     private ArrayList<ArrayList<Article>> items = new ArrayList<ArrayList<Article>>();
 
     @Override
@@ -21,4 +20,5 @@ public class LatestArticle implements LatestItem {
     public void setItems(ArrayList<ArrayList<Article>> items) {
         this.items = items;
     }
+
 }

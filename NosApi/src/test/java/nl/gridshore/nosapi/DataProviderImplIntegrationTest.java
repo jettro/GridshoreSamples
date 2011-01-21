@@ -1,10 +1,12 @@
 package nl.gridshore.nosapi;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -14,6 +16,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class DataProviderImplIntegrationTest {
     private static String key;
+    private DataProvider dataProvider;
 
     @BeforeClass
     public static void loadProperties() throws IOException {
@@ -24,13 +27,51 @@ public class DataProviderImplIntegrationTest {
         key = props.getProperty("key");
     }
 
+    @Before
+    public void createInstanceProperties() {
+        dataProvider = new DataProviderImpl(key);
+    }
 
     @Test
     public void testObtainVersion() throws Exception {
-        Version version;
-        DataProvider dataProvider = new DataProviderImpl(key);
-        version = dataProvider.obtainVersion();
+        Version version = dataProvider.obtainVersion();
         assertEquals("v1", version.getVersion());
         assertEquals("0.0.1", version.getBuild());
+    }
+
+    @Test
+    public void testObtainLatestNewsArticles() throws Exception {
+        List<Article> articles = dataProvider.obtainLatestNewsArticles();
+        assertEquals(10,articles.size());
+    }
+
+    @Test
+    public void testObtainLatestSportNewsArticles() throws Exception {
+        List<Article> articles = dataProvider.obtainLatestSportsNewsArticles();
+        assertEquals(10,articles.size());
+    }
+
+    @Test
+    public void testObtainLatestNewsVideo() throws Exception {
+        List<Article> articles = dataProvider.obtainLatestNewsVideos();
+        assertEquals(10,articles.size());
+    }
+
+    @Test
+    public void testObtainLatestSportNewsVideo() throws Exception {
+        List<Article> articles = dataProvider.obtainLatestSportsNewsVideos();
+        assertEquals(10,articles.size());
+    }
+
+    @Test
+    public void testObtainLatestNewsAudio() throws Exception {
+        List<Article> articles = dataProvider.obtainLatestNewsAudio();
+        assertEquals(10,articles.size());
+    }
+
+    @Test
+    public void testObtainLatestSportNewsAudio() throws Exception {
+        List<Article> articles = dataProvider.obtainLatestSportsNewsAudio();
+        assertEquals(10,articles.size());
     }
 }

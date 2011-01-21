@@ -20,6 +20,7 @@ public class Article {
     private String thumbnail_xs;
     private String thumbnail_s;
     private String thumbnail_m;
+    private String embedCode;
     private ArrayList<String> keywords = new ArrayList<String>();
 
     public String getId() {
@@ -111,5 +112,14 @@ public class Article {
 
     public void setThumbnail_xs(String thumbnail_xs) {
         this.thumbnail_xs = thumbnail_xs;
+    }
+
+    public String getEmbedCode() {
+        return embedCode;
+    }
+
+    @JsonProperty("embedcode")
+    public void setEmbedCode(String embedCode) {
+        this.embedCode = embedCode;
     }
 }
