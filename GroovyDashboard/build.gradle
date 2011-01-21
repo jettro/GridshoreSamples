@@ -1,0 +1,12 @@
+// File: build.gradle
+apply plugin:'groovy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    groovy 'org.codehaus.groovy:groovy-all:1.7.5'
+    compile 'org.codehaus.groovy.modules:groovyws:0.5.2'  // GroovyWS dependency.
+    testCompile 'org.spockframework:spock-core:0.4-groovy-1.7'
+}
