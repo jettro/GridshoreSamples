@@ -67,4 +67,13 @@ public interface DataProvider {
      * @return List of news Articles
      */
     List<Article> obtainLatestSportsNewsAudio();
+
+    /**
+     * The search functionality is limited to one keyword or two keywords combined with AND or OR
+     * {@link "http://open.nos.nl/documentatie/v1/zoeken/query"}
+     *
+     * @param queryString String containing the queryString
+     * @return SearchResults objects found with the query string containing the documents and the keywords
+     */
+    SearchResults searchForDocuments(String queryString);
 }

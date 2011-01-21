@@ -67,6 +67,39 @@ public class DataProviderImpl implements DataProvider {
         return obtainLatestItemPerCategory("sport/","audio", LatestAudio.class);
     }
 
+    @Override
+    public SearchResults searchForDocuments(String queryString) {
+        Assert.notNull(queryString);
+        String url = serverBaseUrl + "search/query/key/{apikey}/output/json/q/{search}";
+        SearchWrapper searchResults = restTemplate.getForObject(url, SearchWrapper.class, apiKey, queryString);
+        ArrayList<nl.gridshore.nosapi.mapping.Document> documents = searchResults.getSearch().get(0).getDocuments();
+        List<Document> foundDocuments = new ArrayList<Document>();
+        for(nl.gridshore.nosapi.mapping.Document document:documents) {
+            foundDocuments.add(new Document(
+                    document.getId(),
+                    document.getType(),
+                    document.getTitle(),
+                    document.getDescription(),
+                    document.getCategory(),
+                    document.getSubCategory(),
+                    document.getPublished(),
+                    document.getLastUpdate(),
+                    document.getLink(),
+                    document.getThumbnail(),
+                    document.getScore(),
+                    document.getKeywords()
+            ));
+        }
+
+        ArrayList<nl.gridshore.nosapi.mapping.Keyword> keywords = searchResults.getSearch().get(0).getKeywords();
+        List<Keyword> foundKeywords = new ArrayList<Keyword>();
+        for(nl.gridshore.nosapi.mapping.Keyword keyword:keywords) {
+            foundKeywords.add(new Keyword(keyword.getTag(),keyword.getCount()));
+        }
+
+        return new SearchResults(foundDocuments,foundKeywords);
+    }
+
     private List<Article> obtainLatestItemPerCategory(String category, String type, Class<? extends LatestItem> clazz) {
         String url = serverBaseUrl + "latest/" + type + "/key/{apikey}/output/json/category/" + category;
         LatestItem latestItem = restTemplate.getForObject(url,clazz, apiKey);
@@ -84,7 +117,9 @@ public class DataProviderImpl implements DataProvider {
                     article.getPublished(),
                     article.getThumbnail_m(),
                     article.getThumbnail_s(),
-                    article.getThumbnail_xs()
+                    article.getThumbnail_xs(),
+                    article.getThumbnail(),
+                    article.getEmbedCode()
             ));
         }
         return articles;

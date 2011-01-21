@@ -18,6 +18,7 @@ public class Article {
     private String thumbnail_xs;
     private String thumbnail_s;
     private String thumbnail_m;
+    private String thumbnail;
     private List<String> keywords;
     private String embedCode;
 
@@ -31,8 +32,9 @@ public class Article {
                    DateTime published,
                    String thumbnail_m,
                    String thumbnail_s,
-                   String thumbnail_xs) {
-        this(id,type,title,description,link,keywords,lastUpdate,published,thumbnail_m,thumbnail_s,thumbnail_xs,null);
+                   String thumbnail_xs,
+                   String thumbnail) {
+        this(id,type,title,description,link,keywords,lastUpdate,published,thumbnail_m,thumbnail_s,thumbnail_xs,thumbnail,null);
     }
 
     public Article(String id,
@@ -46,6 +48,7 @@ public class Article {
                    String thumbnail_m,
                    String thumbnail_s,
                    String thumbnail_xs,
+                   String thumbnail,
                    String embedCode) {
         this.id = id;
         this.type = type;
@@ -107,5 +110,9 @@ public class Article {
 
     public String getEmbedCode() {
         return embedCode;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
     }
 }

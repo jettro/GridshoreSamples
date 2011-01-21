@@ -74,4 +74,10 @@ public class DataProviderImplIntegrationTest {
         List<Article> articles = dataProvider.obtainLatestSportsNewsAudio();
         assertEquals(10,articles.size());
     }
+
+    @Test
+    public void testSearchForDocuments() throws Exception {
+        SearchResults voetbal = dataProvider.searchForDocuments("voetbal");
+        assertEquals(25,voetbal.getDocuments().size());
+    }
 }
