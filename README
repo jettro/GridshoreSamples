@@ -1,9 +1,7 @@
-<p>Welcome to my small projects project. In here I will create samples that are to small to be a project on their own.</p>
+Welcome to my small projects project. In here I will create samples that are to small to be a project on their own.
 
-<p>The following projects are available</p>
+The following projects are available:
 
-<ul>
-<li>FirstStepsHibernateSearch - A very easy Curriculum Vitea application that shows the hibernate search capabilities.</li>
-<li>SpringMobileSample - A very basic sample using the spring mobile project</li>
-<li>groovy-es-client - SOme ideas and tryouts for playing with elastic search using groovy</li>
-</ul>
+* FirstStepsHibernateSearch - A very easy Curriculum Vitea application that shows the hibernate search capabilities.
+* SpringMobileSample - A very basic sample using the spring mobile project
+* groovy-es-client - Some ideas and tryouts for playing with elastic search using groovy
