@@ -5,4 +5,5 @@
 <ul>
 <li>FirstStepsHibernateSearch - A very easy Curriculum Vitea application that shows the hibernate search capabilities.</li>
 <li>SpringMobileSample - A very basic sample using the spring mobile project</li>
+<li>groovy-es-client - SOme ideas and tryouts for playing with elastic search using groovy</li>
 </ul>
