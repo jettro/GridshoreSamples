@@ -8,7 +8,7 @@ import nl.gridshore.wordpress.WordpressReader
 
 def rpcUrl = "http://www.gridshore.nl/xmlrpc.php"
 def username = "admin"
-def password = "Alwin245"
+def password = ""
 
 def reader = new WordpressReader(rpcUrl,username,password)
 
@@ -18,7 +18,7 @@ ElasticSearchGateway gateway = new ElasticSearchGateway()
 
 posts.each {BlogItem item ->
     println item.title
-    gateway.indexBlogItem(item)
+//    gateway.indexBlogItem(item)
 }
 
 System.in.withReader {
