@@ -4,7 +4,7 @@ import nl.gridshore.elasticsearch.ElasticSearchGateway
  * @author Jettro Coenradie
  */
 
-ElasticSearchGateway gateway = new ElasticSearchGateway()
+ElasticSearchGateway gateway = new ElasticSearchGateway(null, null)
 
 gateway.countAllDocuments()
 

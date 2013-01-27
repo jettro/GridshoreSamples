@@ -6,7 +6,7 @@ import nl.gridshore.wordpress.WordpressReader
  * @author Jettro Coenradie
  */
 
-def rpcUrl = "http://www.gridshore.nl/xmlrpc.php"
+def rpcUrl = "http://www.coenradie.com/xmlrpc.php"
 def username = ""
 def password = ""
 
@@ -14,7 +14,7 @@ def reader = new WordpressReader(rpcUrl, username, password)
 
 def posts = reader.obtainMostRecentPosts(100)
 
-ElasticSearchGateway gateway = new ElasticSearchGateway(null, null)
+ElasticSearchGateway gateway = new ElasticSearchGateway("coenradie", "blog")
 
 posts.each { BlogItem item ->
     println item.title
