@@ -1,0 +1,22 @@
+apply plugin: 'groovy'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	groovy 'org.codehaus.groovy:groovy:2.0.6'
+    groovy 'org.codehaus.groovy:groovy-all:2.0.6'
+    groovy ('org.codehaus.groovy:groovy-xmlrpc:0.8') {
+        exclude module: 'groovy-all'
+    }
+    groovy 'commons-cli:commons-cli:1.2'
+    groovy 'log4j:log4j:1.2.16'
+
+
+    groovy ('org.elasticsearch:elasticsearch-lang-groovy:1.2.0') {
+        exclude module: 'groovy-all'
+    }
+}
+
+//    compile 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
