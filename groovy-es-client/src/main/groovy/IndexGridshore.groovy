@@ -14,7 +14,11 @@ def reader = new WordpressReader(rpcUrl, username, password)
 
 def posts = reader.obtainMostRecentPosts(100)
 
-ElasticSearchGateway gateway = new ElasticSearchGateway(null, null)
+ElasticSearchGateway gateway = new ElasticSearchGateway("gridshore", "blog")
+
+gateway.deleteIndex()
+
+gateway.createIndex()
 
 posts.each { BlogItem item ->
     println item.title

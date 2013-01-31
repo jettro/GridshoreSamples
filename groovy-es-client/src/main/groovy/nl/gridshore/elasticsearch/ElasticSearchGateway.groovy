@@ -1,6 +1,7 @@
 package nl.gridshore.elasticsearch
 
 import nl.gridshore.wordpress.BlogItem
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
 import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.groovy.common.xcontent.GXContentBuilder
 import org.elasticsearch.groovy.node.GNode
@@ -53,6 +54,15 @@ class ElasticSearchGateway {
         }
     }
 
+    public deleteIndex() {
+        def response = node.client.admin.indices.prepareDelete(indexValue).execute().get()
+        if (response.acknowledged) {
+            println "The index is removed"
+        } else {
+            println "The index could not be removed"
+        }
+    }
+
     public countAllDocuments() {
         def count = node.client.count {
             indices: indexValue
@@ -60,6 +70,59 @@ class ElasticSearchGateway {
         }
 
         println "Number of found blog items : $count.response.count"
+    }
+
+    public createIndex() {
+        def future = node.client.admin.indices.create {
+            index = this.indexValue
+            settings {
+                number_of_shards = "1"
+                analysis {
+                    analyzer {
+                        comma {
+                            type = "custome"
+                            tokenizer = "bycomma"
+                            filter = ["nowhite"]
+                        }
+                    }
+                    tokenizer {
+                        bycomma {
+                            type = "pattern"
+                            pattern = ","
+                        }
+                    }
+                    filter {
+                        nowhite {
+                            type = "trim"
+                        }
+                    }
+                }
+            }
+            mapping this.typeValue, {
+                "${this.typeValue}" {
+                    properties {
+                        keywords {
+                            type = "string"
+                            analyzer = "comma"
+                        }
+                        categories {
+                            type = "string"
+                            analyzer = "comma"
+                        }
+                    }
+                }
+            }
+
+        }
+
+        future.success = { CreateIndexResponse response ->
+            println "Index is created"
+        }
+
+        future.failure = {
+            println "ERROR creating index $it"
+        }
+
     }
 
     public indexBlogItem(BlogItem blogItem) {

@@ -1,0 +1,36 @@
+curl -XDELETE 'http://localhost:9200/coenradie/'
+curl -XPOST localhost:9200/coenradie -d '{
+    "settings" : {
+       "number_of_shards" : 1,
+       "analysis" : {
+          "analyzer" : {
+             "comma" : {
+                "type" : "custom",
+                "tokenizer" : "bycomma",
+                "filter" : ["no-white"]
+             }
+          },
+          "tokenizer" : {
+             "bycomma" : {
+                "type" : "pattern",
+                "pattern" : ","
+             }
+          },
+          "filter" : {
+            "no-white" : {
+                "type":"trim"
+            }
+          }
+       }
+    },
+    "mappings" : {
+        "blog" : {
+            "properties" : {
+                "keywords" : { "type" : "string","analyzer":"comma" },
+                "categories" : { "type" : "string","analyzer":"comma" }
+            }
+        }
+    }
+}'
+
+curl -XGET 'localhost:9200/coenradie/_analyze?analyzer=comma&pretty=true' -d 'this ,is a ,test, with a lot of,difference,'
