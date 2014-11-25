@@ -5,33 +5,44 @@ import nl.gridshore.eswp.elasticsearch.BulkProcessorBuilder;
 import nl.gridshore.eswp.elasticsearch.IndexCreator;
 import nl.gridshore.eswp.elasticsearch.TransportClientFactory;
 import nl.gridshore.eswp.wordpress.BlogItemTransformer;
+import nl.gridshore.eswp.wordpress.WordpressInteraction;
 import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.elasticsearch.action.bulk.BulkProcessor;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static nl.gridshore.eswp.elasticsearch.SettingsMappingsBuilder.createMappingsString;
+import static nl.gridshore.eswp.elasticsearch.SettingsMappingsBuilder.createSettingsString;
 
 /**
- * Created by jettrocoenradie on 19/11/14.
+ * This is the class to run if you want to import your blog. There are two arguments that you need to provide:
+ * <ol>
+ *     <li>username</li>
+ *     <li>password</li>
+ * </ol>
  */
 public class ImportBlog {
     private final static Logger logger = LoggerFactory.getLogger(ImportBlog.class);
 
-    private static String clusterName = "jc-play";
-    private static List<String> unicastHosts = Arrays.asList("localhost:9300");
+    // Elasticsearch configuration
+    private final static String CLUSTER_NAME = "jc-play";
+    private final static List<String> UNICAST_HOSTS = Arrays.asList("localhost:9300");
+    private final static String INDEX_NAME = "gridshore";
+    private final static String INDEX_TYPE = "blog";
+
+    // Wordpress blog configuration
+    private final static int NUM_ITEMS_TO_FETCH = 300;
+    private final static int ITEMS_TO_START_FROM = 1;
+    private final static String XMLRPC_URL = "http://www.gridshore.nl/xmlrpc2.php";
+
+    private TransportClientFactory elastic;
+    private WordpressInteraction wordpressInteraction;
 
     public static void main(String[] args) throws MalformedURLException, XmlRpcException {
         if (args.length != 2) {
@@ -40,130 +51,56 @@ public class ImportBlog {
         }
         String username = args[0];
         String password = args[1];
-        String xmlrpcUrl = "http://www.gridshore.nl/xmlrpc2.php";
 
-        // Create the elasticsearch client
-        TransportClientFactory elastic = new TransportClientFactory(clusterName, unicastHosts);
+        // Do the actual importing
+        ImportBlog importBlog = new ImportBlog();
+        importBlog.initialize(username, password);
+        importBlog.doImportBlog();
+        importBlog.tearDown();
+    }
 
-        IndexCreator.start(elastic.client(), "gridshore")
+    /**
+     * Initializes the contact with the Wordpress blog and elasticsearch
+     *
+     * @param username String containing the username for the blog
+     * @param password String containing the password for the blog
+     */
+    public void initialize(String username, String password) {
+        this.wordpressInteraction = new WordpressInteraction(username, password, XMLRPC_URL);
+        this.elastic = new TransportClientFactory(CLUSTER_NAME, UNICAST_HOSTS);
+
+        IndexCreator.start(elastic.client(), INDEX_NAME)
                 .settings(createSettingsString())
-                .addMapping("blog", createMappingsString())
+                .addMapping(INDEX_TYPE, createMappingsString())
                 .removeOldIndices()
                 .create();
+    }
 
+    /**
+     * Method to call to start the actual reading and importing of blog items.
+     */
+    public void doImportBlog() {
         BulkProcessor bulkProcessor = BulkProcessorBuilder.build(elastic.client());
+        BlogItemElasticTransformer esTransformer = new BlogItemElasticTransformer(INDEX_NAME, INDEX_TYPE);
 
-        List<Map> items = obtainItemsFromBlog(username, password, xmlrpcUrl);
-
-        BlogItemElasticTransformer esTransformer = new BlogItemElasticTransformer("gridshore","blog");
+        List<Map> items = wordpressInteraction.obtainItemsFromBlog(NUM_ITEMS_TO_FETCH, ITEMS_TO_START_FROM);
 
         items.stream()
                 .map(BlogItemTransformer::transform)
                 .map(esTransformer::transform)
                 .forEach(bulkProcessor::add);
 
-        // close the elasticsearch client
         try {
             bulkProcessor.awaitClose(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             logger.error("Error when waiting for the bulk processor to finish.", e);
         }
+    }
+
+    /**
+     * Closing connection that we do not need anymore.
+     */
+    public void tearDown() {
         elastic.closeClient();
     }
-
-    private static List<Map> obtainItemsFromBlog(String username, String password, String xmlrpcUrl) throws MalformedURLException, XmlRpcException {
-        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-        config.setServerURL(new URL(xmlrpcUrl));
-        XmlRpcClient client = new XmlRpcClient();
-        client.setConfig(config);
-
-        Object result = client.execute(config, "metaWeblog.getRecentPosts", new Object[]{1, username, password, 10});
-        return items(result);
-    }
-
-    private static String createSettingsString() {
-        try {
-            XContentBuilder builder = jsonBuilder()
-                    .startObject()
-                        .field("number_of_shards", 1)
-                        .field("number_of_replicas", 0)
-                    .endObject();
-            return builder.string();
-        } catch (IOException e) {
-            logger.error("Created settings object is wrong", e);
-        }
-        return null;
-    }
-
-    private static String createMappingsString() {
-        try {
-            XContentBuilder builder = jsonBuilder()
-                    .startObject()
-                        .startObject("properties")
-                            .startObject("title")
-                                .field("type", "string")
-                            .endObject()
-                            .startObject("author")
-                                .field("type", "string")
-                                .startObject("fields")
-                                    .startObject("keyword")
-                                        .field("type", "string")
-                                        .field("analyzer", "keyword")
-                                    .endObject()
-                                .endObject()
-                            .endObject()
-                            .startObject("categories")
-                                .field("type", "string")
-                                .startObject("fields")
-                                    .startObject("keyword")
-                                        .field("type", "string")
-                                        .field("analyzer", "keyword")
-                                    .endObject()
-                                .endObject()
-                            .endObject()
-                            .startObject("keywords")
-                                .field("type", "string")
-                                .startObject("fields")
-                                    .startObject("keyword")
-                                        .field("type", "string")
-                                        .field("analyzer", "keyword")
-                                    .endObject()
-                                .endObject()
-                            .endObject()
-                            .startObject("content")
-                                .field("type", "string")
-                            .endObject()
-                            .startObject("slug")
-                                .field("type", "string")
-                            .endObject()
-                            .startObject("status")
-                                .field("type", "string")
-                            .endObject()
-                            .startObject("status")
-                                .field("type", "string")
-                            .endObject()
-                        .endObject()
-                    .endObject();
-            return builder.string();
-        } catch (IOException e) {
-            logger.error("Created mappings object is wrong", e);
-        }
-        return null;
-    }
-
-    private static List<Map> items(Object result) {
-        if (result == null) {
-            return new ArrayList<Map>();
-        }
-
-        Object[] items = (Object[]) result;
-
-        List<Map> listOfMaps = new ArrayList<>();
-        for (Object object : items) {
-            listOfMaps.add((Map) object);
-        }
-
-        return listOfMaps;
-    }
-
 }
