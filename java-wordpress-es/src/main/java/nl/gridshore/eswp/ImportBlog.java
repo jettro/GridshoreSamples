@@ -12,29 +12,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static nl.gridshore.eswp.Constants.*;
 import static nl.gridshore.eswp.elasticsearch.SettingsMappingsBuilder.createMappingsString;
 import static nl.gridshore.eswp.elasticsearch.SettingsMappingsBuilder.createSettingsString;
 
 /**
  * This is the class to run if you want to import your blog. There are two arguments that you need to provide:
  * <ol>
- *     <li>username</li>
- *     <li>password</li>
+ * <li>username</li>
+ * <li>password</li>
  * </ol>
  */
 public class ImportBlog {
     private final static Logger logger = LoggerFactory.getLogger(ImportBlog.class);
-
-    // Elasticsearch configuration
-    private final static String CLUSTER_NAME = "jc-play";
-    private final static List<String> UNICAST_HOSTS = Arrays.asList("localhost:9300");
-    private final static String INDEX_NAME = "gridshore";
-    private final static String INDEX_TYPE = "blog";
 
     // Wordpress blog configuration
     private final static int NUM_ITEMS_TO_FETCH = 300;
