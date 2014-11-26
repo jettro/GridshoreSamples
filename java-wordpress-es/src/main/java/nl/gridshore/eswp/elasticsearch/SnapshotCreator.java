@@ -4,15 +4,24 @@ import org.elasticsearch.action.admin.cluster.repositories.get.GetRepositoriesRe
 import org.elasticsearch.action.admin.cluster.repositories.put.PutRepositoryRequestBuilder;
 import org.elasticsearch.action.admin.cluster.repositories.verify.VerifyRepositoryRequestBuilder;
 import org.elasticsearch.action.admin.cluster.snapshots.create.CreateSnapshotRequestBuilder;
+import org.elasticsearch.action.admin.cluster.snapshots.delete.DeleteSnapshotRequestBuilder;
+import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsRequestBuilder;
+import org.elasticsearch.action.admin.cluster.snapshots.get.GetSnapshotsResponse;
+import org.elasticsearch.action.admin.cluster.snapshots.restore.RestoreSnapshotRequestBuilder;
+import org.elasticsearch.action.admin.indices.close.CloseIndexRequestBuilder;
 import org.elasticsearch.client.ClusterAdminClient;
+import org.elasticsearch.common.collect.ImmutableList;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.repositories.RepositoryMissingException;
+import org.elasticsearch.snapshots.SnapshotInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class to handle the creation and listing of snapshots.
@@ -51,6 +60,42 @@ public class SnapshotCreator {
                 .setIndices(indexPatternToIndex)
                 .setSnapshot(snapshotPrefix + "-" + LocalDateTime.now().format(dateTimeFormatter));
         builder.execute().actionGet();
+    }
+
+    public List<String> showSnapshots() {
+        ClusterAdminClient adminClient = this.clientFactory.client().admin().cluster();
+        GetSnapshotsRequestBuilder builder = new GetSnapshotsRequestBuilder(adminClient);
+        builder.setRepository(repositoryName);
+        GetSnapshotsResponse getSnapshotsResponse = builder.execute().actionGet();
+        return getSnapshotsResponse.getSnapshots().stream().map(SnapshotInfo::name).collect(Collectors.toList());
+    }
+
+    public void deleteSnapshot(String snapshot) {
+        ClusterAdminClient adminClient = this.clientFactory.client().admin().cluster();
+        DeleteSnapshotRequestBuilder builder = new DeleteSnapshotRequestBuilder(adminClient);
+        builder.setRepository(repositoryName).setSnapshot(snapshot);
+
+        builder.execute().actionGet();
+    }
+
+    public void restoreSnapshot(String snapshot) {
+        ClusterAdminClient adminClient = this.clientFactory.client().admin().cluster();
+
+        // Obtain the snapshot and check the indices that are in the snapshot
+        GetSnapshotsRequestBuilder builder = new GetSnapshotsRequestBuilder(adminClient);
+        builder.setRepository(repositoryName);
+        builder.setSnapshots(snapshot);
+        GetSnapshotsResponse getSnapshotsResponse = builder.execute().actionGet();
+
+        ImmutableList<String> indices = getSnapshotsResponse.getSnapshots().get(0).indices();
+        CloseIndexRequestBuilder closeIndexRequestBuilder =
+                new CloseIndexRequestBuilder(this.clientFactory.client().admin().indices());
+        closeIndexRequestBuilder.setIndices(indices.toArray(new String[indices.size()]));
+        closeIndexRequestBuilder.execute().actionGet();
+
+        RestoreSnapshotRequestBuilder restoreBuilder = new RestoreSnapshotRequestBuilder(adminClient);
+        restoreBuilder.setRepository(repositoryName).setSnapshot(snapshot);
+        restoreBuilder.execute().actionGet();
     }
 
     private void createSnapshotRepository(ClusterAdminClient adminClient) {

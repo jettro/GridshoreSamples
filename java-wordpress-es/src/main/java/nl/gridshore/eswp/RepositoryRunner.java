@@ -3,6 +3,8 @@ package nl.gridshore.eswp;
 import nl.gridshore.eswp.elasticsearch.SnapshotCreator;
 import nl.gridshore.eswp.elasticsearch.TransportClientFactory;
 
+import java.util.List;
+
 import static nl.gridshore.eswp.Constants.*;
 
 /**
@@ -14,8 +16,15 @@ public class RepositoryRunner {
         TransportClientFactory factory = new TransportClientFactory(CLUSTER_NAME, UNICAST_HOSTS);
 
         SnapshotCreator snapshotCreator = new SnapshotCreator(factory, REPOSITORY_LOCATION);
-        snapshotCreator.createSnapshot();
 
+//        snapshotCreator.createSnapshot();
+
+        List<String> snapshots = snapshotCreator.showSnapshots();
+        snapshots.forEach(System.out::println);
+
+//        snapshotCreator.deleteSnapshot("gridshore-20141126214102"Added);
+
+//        snapshotCreator.restoreSnapshot("gridshore-20141126214102");
 
         factory.closeClient();
     }
