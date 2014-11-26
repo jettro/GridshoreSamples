@@ -6,7 +6,8 @@ import nl.gridshore.eswp.elasticsearch.TransportClientFactory;
 import static nl.gridshore.eswp.Constants.*;
 
 /**
- * Created by jettrocoenradie on 26/11/14.
+ * With this runner we create a new snapshot from the gridshore index. If the repository is not available,
+ * the repository will be created.
  */
 public class RepositoryRunner {
     public static void main(String[] args) {
