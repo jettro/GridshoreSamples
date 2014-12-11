@@ -1,11 +1,12 @@
 package nl.gridshore.eswp;
 
-import nl.gridshore.eswp.elasticsearch.SnapshotCreator;
+import nl.gridshore.eswp.elasticsearch.SnapshotService;
 import nl.gridshore.eswp.elasticsearch.TransportClientFactory;
 
 import java.util.List;
 
 import static nl.gridshore.eswp.Constants.*;
+import static nl.gridshore.eswp.elasticsearch.SnapshotRepositoryConfig.buildFileSystem;
 
 /**
  * With this runner we create a new snapshot from the gridshore index. If the repository is not available,
@@ -15,16 +16,18 @@ public class RepositoryRunner {
     public static void main(String[] args) {
         TransportClientFactory factory = new TransportClientFactory(CLUSTER_NAME, UNICAST_HOSTS);
 
-        SnapshotCreator snapshotCreator = new SnapshotCreator(factory, REPOSITORY_LOCATION);
+        SnapshotService snapshotService =
+                new SnapshotService(factory, buildFileSystem(REPOSITORY_NAME, REPOSITORY_LOCATION));
+//        snapshotService.createSnapshotRepository();
 
-//        snapshotCreator.createSnapshot();
+        snapshotService.createSnapshot("gridshore", "logstash-*");
 
-        List<String> snapshots = snapshotCreator.showSnapshots();
+        List<String> snapshots = snapshotService.showSnapshots();
         snapshots.forEach(System.out::println);
 
-//        snapshotCreator.deleteSnapshot("gridshore-20141126214102"Added);
+//        snapshotService.deleteSnapshot("gridshore-20141126214102"Added);
 
-//        snapshotCreator.restoreSnapshot("gridshore-20141126214102");
+//        snapshotService.restoreSnapshot("gridshore-20141126214102");
 
         factory.closeClient();
     }

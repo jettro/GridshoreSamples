@@ -1,5 +1,6 @@
 package nl.gridshore.eswp.elasticsearch;
 
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
@@ -25,21 +26,45 @@ import static java.util.stream.Collectors.toList;
 public class TransportClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(TransportClientFactory.class);
     private static final String DEFAULT_CLUSTERNAME = "elasticsearch";
-    private static final List<String> DEFAULT_HOSTS = Arrays.asList("localhost:9300");
+    private static final String DEFAULT_HOST = "localhost:9300";
 
-    private String clusterName = DEFAULT_CLUSTERNAME;
-    private List<String> hosts = DEFAULT_HOSTS;
+    private String clusterName;
+    private List<String> hosts;
 
     private Client client;
 
+    /**
+     * default constructor injecting default cluster name <em>{@value #DEFAULT_CLUSTERNAME}</em> and host
+     * <em>{@value #DEFAULT_HOST}</em>
+     */
     public TransportClientFactory() {
-        this(DEFAULT_CLUSTERNAME, DEFAULT_HOSTS);
+        this(DEFAULT_CLUSTERNAME, DEFAULT_HOST);
     }
 
+    /**
+     * Constructor overriding the name of the cluster using the default host <em>{@value #DEFAULT_HOST}</em>
+     *
+     * @param clusterName String containing the name of the cluster to connect to.
+     */
     public TransportClientFactory(String clusterName) {
-        this(clusterName, DEFAULT_HOSTS);
+        this(clusterName, DEFAULT_HOST);
     }
 
+    /**
+     * Constructor overriding the cluster name as well as the default host.
+     *
+     * @param clusterName String containing the name of the cluster to connect to
+     * @param host        String containing host to connect to.
+     */
+    public TransportClientFactory(String clusterName, String host) {
+        this(clusterName, Arrays.asList(host));
+    }
+
+    /**
+     * Constructor overriding the cluster name as well as the default hosts.
+     * @param clusterName String containing the name of the cluster to connect to
+     * @param hosts List of strings containing hosts to connect to.
+     */
     public TransportClientFactory(String clusterName, List<String> hosts) {
         this.clusterName = clusterName;
         this.hosts = hosts;
@@ -62,7 +87,7 @@ public class TransportClientFactory {
         if (this.client != null) {
             logger.info("Refreshing the connection to elasticsearch with clustername {} and nodes {}",
                     clusterName, hosts);
-            this.client.close();
+            closeClient();
             this.client = null;
         }
         this.client = connectClient();
@@ -78,7 +103,12 @@ public class TransportClientFactory {
      * It is good practise to close the connection to elasticsearch when your application is closing.
      */
     public void closeClient() {
-        this.client.close();
+        try {
+            this.client.close();
+            logger.info("Elasticsearch client is closed");
+        } catch (ElasticsearchException e) {
+            logger.info("Could not close the elasticsearch client.",e);
+        }
     }
 
     private Client connectClient() {

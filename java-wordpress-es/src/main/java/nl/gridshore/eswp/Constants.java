@@ -13,4 +13,5 @@ public interface Constants {
     String INDEX_NAME = "gridshore";
     String INDEX_TYPE = "blog";
     String REPOSITORY_LOCATION = "/Users/jettrocoenradie/temp/elasticbck";
+    String REPOSITORY_NAME = "gridshore-file";
 }
